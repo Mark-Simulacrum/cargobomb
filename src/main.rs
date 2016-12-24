@@ -51,6 +51,8 @@ mod report;
 mod docker;
 mod dirs;
 mod bmk;
+mod job;
+mod blobject;
 
 use clap::{App, Arg, AppSettings, SubCommand, ArgMatches};
 use errors::*;

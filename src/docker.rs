@@ -77,7 +77,7 @@ fn run_in_docker(args: &[&str]) -> Result<()> {
     Ok(())
 }
 
-struct Container(String);
+pub struct Container(String);
 
 fn create_container(args: &[&str]) -> Result<Container> {
     let mut args_ = vec![
