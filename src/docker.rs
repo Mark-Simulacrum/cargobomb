@@ -27,6 +27,7 @@ pub enum Perm {
 
 pub struct RustEnv<'a> {
     pub args: &'a [&'a str],
+    pub crates_io_index: (PathBuf, Perm),
     pub work_dir: (PathBuf, Perm),
     pub cargo_home: (PathBuf, Perm),
     pub rustup_home: (PathBuf, Perm),
@@ -94,6 +95,11 @@ pub fn rust_container(config: RustEnv) -> ContainerConfig {
             host_path: config.rustup_home.0,
             container_path: "/rustup-home",
             perm: config.rustup_home.1,
+        },
+        MountConfig {
+            host_path: config.crates_io_index.0,
+            container_path: "/crates.io-index",
+            perm: config.crates_io_index.1,
         },
     ];
 

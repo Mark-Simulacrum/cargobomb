@@ -10,6 +10,8 @@ lazy_static! {
     };
     pub static ref LOCAL_DIR: PathBuf = WORK_DIR.join("local");
 
+    pub static ref CRATES_IO_INDEX: String =
+        LOCAL_DIR.join("crates.io-index").to_string_lossy().into();
     pub static ref CARGO_HOME: String = LOCAL_DIR.join("cargo-home").to_string_lossy().into();
     pub static ref RUSTUP_HOME: String = LOCAL_DIR.join("rustup-home").to_string_lossy().into();
 

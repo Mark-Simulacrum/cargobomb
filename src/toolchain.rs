@@ -1,4 +1,4 @@
-use dirs::{CARGO_HOME, RUSTUP_HOME, TARGET_DIR, TOOLCHAIN_DIR};
+use dirs::{CRATES_IO_INDEX, CARGO_HOME, RUSTUP_HOME, TARGET_DIR, TOOLCHAIN_DIR};
 use dl;
 use docker;
 use errors::*;
@@ -6,11 +6,12 @@ use reqwest;
 use run;
 use std::env::consts::EXE_SUFFIX;
 use std::fs::{self, File};
-use std::io;
+use std::io::{self, Write};
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 use tempdir::TempDir;
 use util;
+use registry::crates_index_registry;
 
 const RUSTUP_BASE_URL: &'static str = "https://static.rust-lang.org/rustup/dist";
 
@@ -87,6 +88,17 @@ impl FromStr for Toolchain {
 
 fn init_rustup() -> Result<()> {
     fs::create_dir_all(&*CARGO_HOME)?;
+
+    // ensure index is updated
+    let _ = crates_index_registry()?;
+
+    // always pull from a local cache of the crates.io index
+    let mut file = File::create(format!("{}/config", &*CARGO_HOME))?;
+    file.write_all(b"[source.crates-io]\n")?;
+    file.write_all(b"replace-with = 'local-crates-io'\n")?;
+    file.write_all(b"[source.local-crates-io]\n")?;
+    file.write_all(b"registry = 'file:///crates.io-index/'\n")?;
+
     fs::create_dir_all(&*RUSTUP_HOME)?;
     if rustup_exists() {
         update_rustup()?;
@@ -261,6 +273,7 @@ impl Toolchain {
         let rust_env = docker::RustEnv {
             args: &full_args,
             work_dir: (source_dir.into(), perm),
+            crates_io_index: (Path::new(&*CRATES_IO_INDEX).into(), docker::Perm::ReadOnly),
             cargo_home: (Path::new(&*CARGO_HOME).into(), perm),
             rustup_home: (Path::new(&*RUSTUP_HOME).into(), docker::Perm::ReadOnly),
             // This is configured as CARGO_TARGET_DIR by the docker container itself
