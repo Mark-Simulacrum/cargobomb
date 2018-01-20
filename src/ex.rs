@@ -76,7 +76,10 @@ pub struct ExOpts {
 }
 
 pub fn define(opts: ExOpts) -> Result<()> {
-    delete(&opts.name)?;
+    let ex_dir = ex_dir(&opts.name);
+    if ex_dir.exists() {
+        bail!("attempting to define {} which already exists", opts.name);
+    }
     let crates = match opts.crates {
         ExCrateSelect::Full => lists::read_all_lists()?,
         ExCrateSelect::Demo => demo_list()?,
